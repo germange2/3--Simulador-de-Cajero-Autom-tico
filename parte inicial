@@ -148,3 +148,88 @@ void mostrarMenu() {
     cout << "5. Salir\n";
     cout << "========================================\n";
 }
+
+// Autenticar usuario
+int autenticarUsuario(Cuenta* cuentas, int totalCuentas) {
+    int numCuenta;
+    string pin;
+    int intentos = 0;
+    const int MAX_INTENTOS = 3;
+    
+    while (intentos < MAX_INTENTOS) {
+        try {
+            cout << "Ingrese su numero de cuenta: ";
+            if (!(cin >> numCuenta)) {
+                throw invalid_argument("Numero de cuenta invalido.");
+            }
+            
+            limpiarBuffer();
+            
+            cout << "Ingrese su PIN: ";
+            getline(cin, pin);
+            
+            // Buscar la cuenta
+            for (int i = 0; i < totalCuentas; i++) {
+                if (cuentas[i].numeroCuenta == numCuenta && cuentas[i].pin == pin) {
+                    cout << "\nAutenticacion exitosa!\n";
+                    cout << "Bienvenido, " << cuentas[i].titular << "\n";
+                    return i;
+                }
+            }
+            
+            intentos++;
+            cout << "\nCredenciales incorrectas. Intentos restantes: " 
+                 << (MAX_INTENTOS - intentos) << "\n\n";
+            
+        } catch (const invalid_argument& e) {
+            cout << "\nError: " << e.what() << "\n";
+            limpiarBuffer();
+            intentos++;
+        }
+    }
+    
+    return -1;
+}
+
+// Consultar saldo
+void consultarSaldo(const Cuenta& cuenta) {
+    cout << "\n========================================\n";
+    cout << "        CONSULTA DE SALDO\n";
+    cout << "========================================\n";
+    cout << "Titular: " << cuenta.titular << "\n";
+    cout << "Numero de cuenta: " << cuenta.numeroCuenta << "\n";
+    cout << fixed << setprecision(2);
+    cout << "Saldo disponible: $" << cuenta.saldo << "\n";
+    cout << "========================================\n";
+}
+
+// Realizar retiro
+void realizarRetiro(Cuenta& cuenta) {
+    cout << "\n========================================\n";
+    cout << "           RETIRO DE EFECTIVO\n";
+    cout << "========================================\n";
+    
+    try {
+        double monto = leerMonto("Ingrese el monto a retirar: $");
+        
+        if (!validarMonto(monto)) {
+            throw invalid_argument("El monto debe ser mayor a cero.");
+        }
+        
+        if (monto > cuenta.saldo) {
+            throw runtime_error("Saldo insuficiente para realizar el retiro.");
+        }
+        
+        cuenta.saldo -= monto;
+        
+        cout << "\nRetiro exitoso!\n";
+        cout << fixed << setprecision(2);
+        cout << "Monto retirado: $" << monto << "\n";
+        cout << "Saldo restante: $" << cuenta.saldo << "\n";
+        cout << "========================================\n";
+        
+    } catch (const exception& e) {
+        cout << "\nError: " << e.what() << "\n";
+        cout << "========================================\n";
+    }
+}
