@@ -1,0 +1,150 @@
+#include <iostream>
+#include <string>
+#include <limits>
+#include <iomanip>
+#include <stdexcept>
+
+using namespace std;
+
+// Estructura para representar una cuenta bancaria
+struct Cuenta {
+    int numeroCuenta;
+    string titular;
+    double saldo;
+    string pin;
+};
+
+// Constantes
+const int MAX_CUENTAS = 10;
+const int NUM_CUENTAS_INICIALES = 3;
+
+// Prototipos de funciones
+void inicializarCuentas(Cuenta* cuentas, int& totalCuentas);
+void mostrarMenu();
+int autenticarUsuario(Cuenta* cuentas, int totalCuentas);
+void consultarSaldo(const Cuenta& cuenta);
+void realizarRetiro(Cuenta& cuenta);
+void realizarDeposito(Cuenta& cuenta);
+void realizarTransferencia(Cuenta* cuentas, int totalCuentas, int indiceOrigen);
+double leerMonto(const string& mensaje);
+void limpiarBuffer();
+void pausar();
+bool validarMonto(double monto);
+
+// Función principal
+int main() {
+    Cuenta cuentas[MAX_CUENTAS];
+    int totalCuentas = 0;
+    int opcion = 0;
+    
+    // Inicializar cuentas con datos predeterminados
+    inicializarCuentas(cuentas, totalCuentas);
+    
+    cout << "========================================\n";
+    cout << "  BIENVENIDO AL CAJERO AUTOMATICO\n";
+    cout << "========================================\n\n";
+    
+    try {
+        // Autenticación del usuario
+        int indiceCuentaActual = autenticarUsuario(cuentas, totalCuentas);
+        
+        if (indiceCuentaActual == -1) {
+            throw runtime_error("Autenticacion fallida. Demasiados intentos.");
+        }
+        
+        // Menú principal
+        do {
+            try {
+                mostrarMenu();
+                cout << "Seleccione una opcion: ";
+                
+                if (!(cin >> opcion)) {
+                    throw invalid_argument("Entrada invalida. Debe ingresar un numero.");
+                }
+                
+                limpiarBuffer();
+                
+                switch (opcion) {
+                    case 1:
+                        consultarSaldo(cuentas[indiceCuentaActual]);
+                        pausar();
+                        break;
+                        
+                    case 2:
+                        realizarRetiro(cuentas[indiceCuentaActual]);
+                        pausar();
+                        break;
+                        
+                    case 3:
+                        realizarDeposito(cuentas[indiceCuentaActual]);
+                        pausar();
+                        break;
+                        
+                    case 4:
+                        realizarTransferencia(cuentas, totalCuentas, indiceCuentaActual);
+                        pausar();
+                        break;
+                        
+                    case 5:
+                        cout << "\nGracias por usar nuestro cajero automatico.\n";
+                        cout << "Hasta pronto!\n";
+                        break;
+                        
+                    default:
+                        if (opcion != 5) {
+                            throw out_of_range("Opcion no valida. Intente nuevamente.");
+                        }
+                }
+                
+            } catch (const invalid_argument& e) {
+                cout << "\nError: " << e.what() << "\n";
+                limpiarBuffer();
+                pausar();
+            } catch (const out_of_range& e) {
+                cout << "\nError: " << e.what() << "\n";
+                pausar();
+            } catch (const exception& e) {
+                cout << "\nError inesperado: " << e.what() << "\n";
+                pausar();
+            }
+            
+        } while (opcion != 5);
+        
+    } catch (const exception& e) {
+        cout << "\nError fatal: " << e.what() << "\n";
+        cout << "El sistema se cerrara.\n";
+        return 1;
+    }
+    
+    return 0;
+}
+
+// Inicializar cuentas con datos de prueba
+void inicializarCuentas(Cuenta* cuentas, int& totalCuentas) {
+    cuentas[0] = {1001, "Juan Perez", 5000.50, "1234"};
+    cuentas[1] = {1002, "Maria Garcia", 10000.00, "5678"};
+    cuentas[2] = {1003, "Carlos Rodriguez", 7500.75, "9012"};
+    totalCuentas = NUM_CUENTAS_INICIALES;
+    
+    cout << "CUENTAS DE PRUEBA DISPONIBLES:\n";
+    cout << "--------------------------------\n";
+    for (int i = 0; i < totalCuentas; i++) {
+        cout << "Cuenta: " << cuentas[i].numeroCuenta 
+             << " | Titular: " << cuentas[i].titular 
+             << " | PIN: " << cuentas[i].pin << "\n";
+    }
+    cout << "--------------------------------\n\n";
+}
+
+// Mostrar menú principal
+void mostrarMenu() {
+    cout << "\n========================================\n";
+    cout << "           MENU PRINCIPAL\n";
+    cout << "========================================\n";
+    cout << "1. Consultar Saldo\n";
+    cout << "2. Realizar Retiro\n";
+    cout << "3. Realizar Deposito\n";
+    cout << "4. Transferir a otra cuenta\n";
+    cout << "5. Salir\n";
+    cout << "========================================\n";
+}
