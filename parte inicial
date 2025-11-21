@@ -233,3 +233,122 @@ void realizarRetiro(Cuenta& cuenta) {
         cout << "========================================\n";
     }
 }
+
+// Realizar depósito
+void realizarDeposito(Cuenta& cuenta) {
+    cout << "\n========================================\n";
+    cout << "          DEPOSITO DE EFECTIVO\n";
+    cout << "========================================\n";
+    
+    try {
+        double monto = leerMonto("Ingrese el monto a depositar: $");
+        
+        if (!validarMonto(monto)) {
+            throw invalid_argument("El monto debe ser mayor a cero.");
+        }
+        
+        cuenta.saldo += monto;
+        
+        cout << "\nDeposito exitoso!\n";
+        cout << fixed << setprecision(2);
+        cout << "Monto depositado: $" << monto << "\n";
+        cout << "Saldo actual: $" << cuenta.saldo << "\n";
+        cout << "========================================\n";
+        
+    } catch (const exception& e) {
+        cout << "\nError: " << e.what() << "\n";
+        cout << "========================================\n";
+    }
+}
+
+// Realizar transferencia
+void realizarTransferencia(Cuenta* cuentas, int totalCuentas, int indiceOrigen) {
+    cout << "\n========================================\n";
+    cout << "      TRANSFERENCIA ENTRE CUENTAS\n";
+    cout << "========================================\n";
+    
+    try {
+        int numCuentaDestino;
+        cout << "Ingrese el numero de cuenta destino: ";
+        
+        if (!(cin >> numCuentaDestino)) {
+            throw invalid_argument("Numero de cuenta invalido.");
+        }
+        
+        limpiarBuffer();
+        
+        // Buscar cuenta destino
+        int indiceDestino = -1;
+        for (int i = 0; i < totalCuentas; i++) {
+            if (cuentas[i].numeroCuenta == numCuentaDestino) {
+                indiceDestino = i;
+                break;
+            }
+        }
+        
+        if (indiceDestino == -1) {
+            throw runtime_error("Cuenta destino no encontrada.");
+        }
+        
+        if (indiceDestino == indiceOrigen) {
+            throw logic_error("No puede transferir a su propia cuenta.");
+        }
+        
+        double monto = leerMonto("Ingrese el monto a transferir: $");
+        
+        if (!validarMonto(monto)) {
+            throw invalid_argument("El monto debe ser mayor a cero.");
+        }
+        
+        if (monto > cuentas[indiceOrigen].saldo) {
+            throw runtime_error("Saldo insuficiente para realizar la transferencia.");
+        }
+        
+        // Realizar la transferencia
+        cuentas[indiceOrigen].saldo -= monto;
+        cuentas[indiceDestino].saldo += monto;
+        
+        cout << "\nTransferencia exitosa!\n";
+        cout << fixed << setprecision(2);
+        cout << "Monto transferido: $" << monto << "\n";
+        cout << "Destinatario: " << cuentas[indiceDestino].titular << "\n";
+        cout << "Su saldo restante: $" << cuentas[indiceOrigen].saldo << "\n";
+        cout << "========================================\n";
+        
+    } catch (const exception& e) {
+        cout << "\nError: " << e.what() << "\n";
+        cout << "========================================\n";
+        limpiarBuffer();
+    }
+}
+
+// Leer monto con validación
+double leerMonto(const string& mensaje) {
+    double monto;
+    cout << mensaje;
+    
+    if (!(cin >> monto)) {
+        limpiarBuffer();
+        throw invalid_argument("Entrada invalida. Debe ingresar un numero.");
+    }
+    
+    limpiarBuffer();
+    return monto;
+}
+
+// Validar que el monto sea positivo
+bool validarMonto(double monto) {
+    return monto > 0;
+}
+
+// Limpiar buffer de entrada
+void limpiarBuffer() {
+    cin.clear();
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+// Pausar la ejecución
+void pausar() {
+    cout << "\nPresione ENTER para continuar...";
+    cin.get();
+}
